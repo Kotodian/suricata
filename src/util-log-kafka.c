@@ -186,7 +186,7 @@ int SCConfLogOpenKafka(ConfNode *kafka_node, void *lf_ctx)
 
     conf = rd_kafka_conf_new();
 
-    if (rd_kafka_conf_set(conf, "suricata.servers", log_ctx->kafka_setup.server, errstr,
+    if (rd_kafka_conf_set(conf, "bootstrap.servers", log_ctx->kafka_setup.server, errstr,
                             sizeof(errstr)) != RD_KAFKA_CONF_OK) {
         FatalError("kafka conf set failed");
     }
