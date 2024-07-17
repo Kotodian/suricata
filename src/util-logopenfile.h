@@ -33,7 +33,9 @@
 #include "util-log-redis.h"
 #endif /* HAVE_LIBHIREDIS */
 
+#ifdef HAVE_LIBRDKAFKA
 #include "util-log-kafka.h"
+#endif /* HAVE_LIBRDKAFKA */
 
 #include "output-eve.h"
 

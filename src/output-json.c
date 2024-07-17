@@ -1014,7 +1014,11 @@ static inline enum LogFileType FileTypeFromConf(const char *typestr)
         FatalError("redis JSON output option is not compiled");
 #endif
     } else if (strcmp(typestr, "kafka") == 0) {
+#ifdef HAVE_LIBRDKAFKA
         log_filetype = LOGFILE_TYPE_KAFKA;
+#else
+        FatalError("kafka JSON output option is not compiled");
+#endif
     }
     SCLogDebug("type %s, file type value %d", typestr, log_filetype);
     return log_filetype;
@@ -1066,6 +1070,7 @@ static int LogFileTypePrepare(
         }
         json_ctx->file_ctx->filetype.filetype = json_ctx->filetype;
     }
+#ifdef HAVE_LIBRDKAFKA
     else if (log_filetype == LOGFILE_TYPE_KAFKA) {
         SCLogKafkaInit();
         ConfNode *kafka_node = ConfNodeLookupChild(conf, "kafka");
@@ -1074,6 +1079,7 @@ static int LogFileTypePrepare(
             return -1;
         }
     }
+#endif
 
     return 0;
 }
