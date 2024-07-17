@@ -33,6 +33,8 @@
 #include "util-log-redis.h"
 #endif /* HAVE_LIBHIREDIS */
 
+#include "util-log-kafka.h"
+
 #include "output-eve.h"
 
 enum LogFileType {
@@ -42,7 +44,8 @@ enum LogFileType {
     LOGFILE_TYPE_REDIS,
     /** New style or modular filetypes. */
     LOGFILE_TYPE_FILETYPE,
-    LOGFILE_TYPE_NOTSET
+    LOGFILE_TYPE_NOTSET,
+    LOGFILE_TYPE_KAFKA,
 };
 
 typedef struct ThreadLogFileHashEntry {
@@ -75,12 +78,18 @@ typedef struct LogFileCtx_ {
 #ifdef HAVE_LIBHIREDIS
         void *redis;
 #endif
+#ifdef HAVE_LIBRDKAFKA
+        void *kafka;
+#endif
     };
     LogThreadedFileCtx *threads;
 
     union {
 #ifdef HAVE_LIBHIREDIS
         RedisSetup redis_setup;
+#endif
+#ifdef HAVE_LIBRDKAFKA
+        KafkaSetup kafka_setup;
 #endif
     };
 

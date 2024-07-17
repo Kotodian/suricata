@@ -1,6 +1,6 @@
 /* Copyright (C) 2007-2023 Open Information Security Foundation
- *
  * You can copy, redistribute or modify this Program under the terms of
+ *
  * the GNU General Public License version 2 as published by the Free
  * Software Foundation.
  *
@@ -1013,6 +1013,8 @@ static inline enum LogFileType FileTypeFromConf(const char *typestr)
 #else
         FatalError("redis JSON output option is not compiled");
 #endif
+    } else if (strcmp(typestr, "kafka") == 0) {
+        log_filetype = LOGFILE_TYPE_KAFKA;
     }
     SCLogDebug("type %s, file type value %d", typestr, log_filetype);
     return log_filetype;
@@ -1063,6 +1065,14 @@ static int LogFileTypePrepare(
             return -1;
         }
         json_ctx->file_ctx->filetype.filetype = json_ctx->filetype;
+    }
+    else if (log_filetype == LOGFILE_TYPE_KAFKA) {
+        SCLogKafkaInit();
+        ConfNode *kafka_node = ConfNodeLookupChild(conf, "kafka");
+
+        if (SCConfLogOpenKafka(kafka_node, json_ctx->file_ctx) < 0) {
+            return -1;
+        }
     }
 
     return 0;

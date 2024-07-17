@@ -544,6 +544,7 @@ noinst_HEADERS = \
 	util-landlock.h \
 	util-logopenfile.h \
 	util-log-redis.h \
+	util-log-kafka.h \
 	util-lua-common.h \
 	util-lua-dnp3.h \
 	util-lua-dnp3-objects.h \
@@ -1128,6 +1129,7 @@ libsuricata_c_a_SOURCES = \
 	util-landlock.c \
 	util-logopenfile.c \
 	util-log-redis.c \
+	util-log-kafka.c \
 	util-lua.c \
 	util-lua-common.c \
 	util-lua-dnp3.c \

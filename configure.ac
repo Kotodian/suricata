@@ -1932,6 +1932,43 @@
         LDFLAGS="${LDFLAGS} -pie"
     fi
 
+# librdkafka includes and libraries
+    AC_ARG_ENABLE(rdkafka,
+            AS_HELP_STRING([--enable-rdkafka],[Enable Kafka support]),
+            [ enable_rdkafka="$enableval"],
+            [ enable_rdkafka="no"])
+    AC_ARG_WITH(librdkafka_includes,
+            [  --with-librdkafka-includes=DIR  librdkafka include directory],
+            [with_librdkafka_includes="$withval"],[with_librdkafka_includes="no"])
+    AC_ARG_WITH(librdkafka_libraries,
+            [  --with-librdkafka-libraries=DIR    librdkafka library directory],
+            [with_librdkafka_libraries="$withval"],[with_librdkafka_libraries="no"])
+
+    if test "$enable_rdkafka" = "yes"; then
+        if test "$with_librdkafka_includes" != "no"; then
+            CPPFLAGS="${CPPFLAGS} -I${with_librdkafka_includes}"
+        fi
+
+        AC_CHECK_HEADER("rdkafka.h",RDKAFKA="yes",RDKAFKA="no")
+        if test "$RDKAFKA" = "yes"; then
+            if test "$with_librdkafka_libraries" != "no"; then
+                LDFLAGS="${LDFLAGS} -L${with_librdkafka_libraries}"
+            fi
+            AC_CHECK_LIB(rdkafka, rd_kafka_new,, RDKAFKA="no")
+        fi
+        if test "$RDKAFKA" = "no"; then
+            echo
+            echo "   ERROR!  librdkafka library not found, go get it"
+            echo "   from https://github.com/confluentinc/librdkafka"
+            echo
+            exit 1
+        fi
+
+        AC_DEFINE([HAVE_LIBRDKAFKA], [1], [librdkafka available])
+        enable_rdkafka="yes"
+    fi
+
+
 #libevent includes and libraries
     AC_ARG_WITH(libevent_includes,
             [  --with-libevent-includes=DIR  libevent include directory],
@@ -2507,6 +2544,7 @@ SURICATA_BUILD_CONF="Suricata Configuration:
   libjansson support:                      ${enable_jansson}
   hiredis support:                         ${enable_hiredis}
   hiredis async with libevent:             ${enable_hiredis_async}
+  rdkafka support:                         ${enable_rdkafka}
   PCRE jit:                                ${pcre2_jit_available}
   GeoIP2 support:                          ${enable_geoip}
   JA3 support:                             ${enable_ja3}

@@ -943,6 +943,12 @@ int LogFileWrite(LogFileCtx *file_ctx, MemBuffer *buffer)
         SCMutexUnlock(&file_ctx->fp_mutex);
     }
 #endif
+    else if (file_ctx->type == LOGFILE_TYPE_KAFKA) {
+        SCMutexLock(&file_ctx->fp_mutex);
+        LogFileWriteKafka(file_ctx, (const char*)MEMBUFFER_BUFFER(buffer),
+                MEMBUFFER_OFFSET(buffer));
+        SCMutexUnlock(&file_ctx->fp_mutex);
+    }
 
     return 0;
 }

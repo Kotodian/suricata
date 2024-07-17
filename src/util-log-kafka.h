@@ -1,0 +1,49 @@
+/* Copyright (C) 2016 Open Information Security Foundation
+ *
+ * You can copy, redistribute or modify this Program under the terms of
+ * the GNU General Public License version 2 as published by the Free
+ * Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * version 2 along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
+ */
+
+/**
+ * \file
+ *
+ * \author Kotodian <blackfaceuncle@gmail.com>
+ */
+
+#ifndef SURICATA_UTIL_LOG_KAFKA_H
+#define SURICATA_UTIL_LOG_KAFKA_H
+
+#ifdef HAVE_LIBRDKAFKA
+#include <rdkafka.h>
+
+#include "conf.h"            /* ConfNode   */
+
+
+typedef struct KafkaSetup_ {
+    const char *server;
+    uint16_t  port;
+    int  batch_size;
+    const char *topic;
+} KafkaSetup;
+
+typedef struct SCLogKafkaContext_ {
+    rd_kafka_t *rk;
+} SCLogKafkaContext;
+
+void SCLogKafkaInit(void);
+int SCConfLogOpenKafka(ConfNode *, void *);
+int LogFileWriteKafka(void *, const char *, size_t);
+
+#endif /* HAVE_LIBRDKAFKA */
+#endif /* SURICATA_UTIL_LOG_KAFKA_H */
