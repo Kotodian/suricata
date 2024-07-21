@@ -559,7 +559,7 @@ static TmEcode FlowWorker(ThreadVars *tv, Packet *p, void *data)
 
     SCLogDebug("packet %" PRIu64, p->pcap_cnt);
 
-    if (fw->dtv->cb_func && !fw->dtv->cb_func(fw->dtv, p)) {
+    if (fw->dtv->filter_func && fw->dtv->filter_func(fw->dtv, p)) {
         TmqhOutputPacketpool(tv, p);
         return TM_ECODE_OK;
     }

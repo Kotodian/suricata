@@ -947,8 +947,8 @@ typedef struct DecodeThreadVars_
     /** Specific context for udp protocol detection (here atm) */
     AppLayerThreadCtx *app_tctx;
 
-    /** Callback */
-    int (*cb_func)(struct DecodeThreadVars_ *, Packet *);
+    /** Filter */
+    int (*filter_func)(struct DecodeThreadVars_ *, Packet *);
 
     /** stats/counters */
     uint16_t counter_pkts;
