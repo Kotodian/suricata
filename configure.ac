@@ -151,6 +151,7 @@
     AC_CHECK_HEADERS([mach/mach.h])
     AC_CHECK_HEADERS([stdatomic.h])
     AC_CHECK_HEADERS([sys/queue.h])
+    AC_CHECK_HEADERS([nbpf.h])
 
     AC_CHECK_HEADERS([sys/socket.h net/if.h sys/mman.h linux/if_arp.h], [], [],
     [[#ifdef HAVE_SYS_SOCKET_H
@@ -1968,6 +1969,40 @@
         enable_rdkafka="yes"
     fi
 
+# libnbpf includes and libraries
+    enable_nbpf="no"
+    AC_ARG_ENABLE(libnbpf,
+           AS_HELP_STRING([--enable-libnbpf], [Enable libnbpf support [default=yes]]),
+                        [enable_nbpf=$enableval],[enable_nbpf=yes])
+    AC_ARG_WITH(libnbpf_includes,
+            [  --with-libnbpf-includes=DIR  libnbpf include directory],
+            [with_libnbpf_includes="$withval"],[with_libnbpf_includes="no"])
+    AC_ARG_WITH(libnbpf_libraries,
+            [  --with-libnbpf-libraries=DIR    libnbpf library directory],
+            [with_libnbpf_libraries="$withval"],[with_libnbpf_libraries="no"])
+
+    if test "$enable_nbpf" = "yes"; then
+        if test "$with_libnbpf_includes" != "no"; then
+            CPPFLAGS="${CPPFLAGS} -I${with_libnbpf_includes}"
+        fi
+
+        AC_CHECK_HEADER(nbpf.h,NBPF="yes",NBPF="no")
+        if test "$NBPF" = "yes"; then
+            if test "$with_libnbpf_libraries" != "no"; then
+                LDFLAGS="${LDFLAGS} -L${with_libnbpf_libraries}"
+            fi
+            AC_CHECK_LIB(nbpf, nbpf_match,, NBPF="no")
+        fi
+        if test "$NBPF" = "no"; then
+            echo
+            echo "   ERROR!  libnbpf library not found, go get it"
+            echo "   from https://github.com/ntop/PF_RING"
+            echo
+            exit 1
+        fi
+        AC_DEFINE([HAVE_LIBNBPF], [1], [libnbpf available])
+    fi
+
 
 #libevent includes and libraries
     AC_ARG_WITH(libevent_includes,
@@ -2545,6 +2580,7 @@ SURICATA_BUILD_CONF="Suricata Configuration:
   hiredis support:                         ${enable_hiredis}
   hiredis async with libevent:             ${enable_hiredis_async}
   rdkafka support:                         ${enable_rdkafka}
+  Libnbpf support:                         ${enable_nbpf}
   PCRE jit:                                ${pcre2_jit_available}
   GeoIP2 support:                          ${enable_geoip}
   JA3 support:                             ${enable_ja3}
