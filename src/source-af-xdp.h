@@ -42,6 +42,8 @@ typedef struct AFXDPIfaceConfig {
     uint32_t gro_flush_timeout;
     uint32_t napi_defer_hard_irqs;
 
+    const char *bpf_filter;
+
     SC_ATOMIC_DECLARE(unsigned int, ref);
     void (*DerefFunc)(void *);
 } AFXDPIfaceConfig;
@@ -58,6 +60,8 @@ typedef struct AFXDPPacketVars_ {
     uint32_t fq_idx;
     /* Origin address of packet */
     uint64_t orig;
+    /* nbpf filter */
+    nbpf_tree_t *bpf_filter;
 } AFXDPPacketVars;
 
 void TmModuleReceiveAFXDPRegister(void);

@@ -58,6 +58,7 @@
 #include "runmodes.h"
 #include "flow-storage.h"
 #include "util-validate.h"
+#include <nbpf.h>
 
 #ifdef HAVE_AF_XDP
 #include <net/if.h>
@@ -196,6 +197,9 @@ typedef struct AFXDPThreadVars_ {
     uint16_t capture_afxdp_empty_reads;
     uint16_t capture_afxdp_failed_reads;
     uint16_t capture_afxdp_acquire_pkt_failed;
+
+    /* nbpf filter */
+    nbpf_tree_t *bpf_filter;
 } AFXDPThreadVars;
 
 static TmEcode ReceiveAFXDPThreadInit(ThreadVars *, const void *, void **);
@@ -669,6 +673,10 @@ static TmEcode ReceiveAFXDPThreadInit(ThreadVars *tv, const void *initdata, void
     ptv->capture_afxdp_acquire_pkt_failed =
             StatsRegisterCounter("capture.afxdp.acquire_pkt_failed", ptv->tv);
 
+    /* Bpf configuration */
+    if (afxdpconfig->bpf_filter)
+        ptv->bpf_filter = nbpf_parse(afxdpconfig->bpf_filter, NULL);
+
     /* Reserve memory for umem  */
     if (AcquireBuffer(ptv) != TM_ECODE_OK) {
         SCFree(ptv);
@@ -803,6 +811,7 @@ static TmEcode ReceiveAFXDPLoop(ThreadVars *tv, void *data, void *slot)
             p->afxdp_v.fq_idx = idx_fq++;
             p->afxdp_v.orig = orig;
             p->afxdp_v.fq = &ptv->umem.fq;
+            p->afxdp_v.bpf_filter = ptv->bpf_filter;
 
             PacketSetData(p, pkt_data, len);
 
@@ -886,6 +895,10 @@ static TmEcode ReceiveAFXDPThreadDeinit(ThreadVars *tv, void *data)
         ptv->umem.umem = NULL;
     }
     munmap(ptv->umem.buf, MEM_BYTES);
+
+    if (ptv->bpf_filter) {
+        nbpf_free(ptv->bpf_filter);
+    }
 
     SCFree(ptv);
     SCReturnInt(TM_ECODE_OK);

@@ -54,6 +54,7 @@
 #include "util-ioctl.h"
 #include "util-ebpf.h"
 #include "util-byte.h"
+#include "util-bpf.h"
 
 #include "source-af-xdp.h"
 
@@ -184,6 +185,7 @@ static void *ParseAFXDPConfig(const char *iface)
     aconf->gro_flush_timeout = DEFAULT_GRO_FLUSH_TIMEOUT;
     aconf->napi_defer_hard_irqs = DEFAULT_NAPI_HARD_IRQS;
     aconf->mem_alignment = XSK_UMEM__DEFAULT_FLAGS;
+    aconf->bpf_filter = NULL;
 
     /* Find initial node */
     af_xdp_node = ConfGetNode("af-xdp");
@@ -264,6 +266,9 @@ static void *ParseAFXDPConfig(const char *iface)
             aconf->enable_busy_poll = false;
         }
     }
+
+    /* Bpf filter options */
+    ConfSetBPFFilter(if_root, if_default, iface, &aconf->bpf_filter);
 
     if (aconf->enable_busy_poll) {
         if (ConfGetChildValueIntWithDefault(if_root, if_default, "busy-poll-time", &conf_val_int) ==
